@@ -1,0 +1,70 @@
+# Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials provided
+#       with the distribution.
+#     * Neither the name of The Linux Foundation nor the names of its
+#       contributors may be used to endorse or promote products derived
+#       from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+#
+
+on boot
+    # Touchscreen
+    chown system system /sys/devices/platform/soc/a98000.i2c/i2c-7/7-0020/input/input1/wake_gesture
+    chmod 0660 /sys/devices/platform/soc/a98000.i2c/i2c-7/7-0020/input/input1/wake_gesture
+
+on post-fs-data
+    mkdir /data/misc/fih_atl 2770 radio root
+    mkdir /data/misc/fih_mcfg 0775 radio root
+
+on property:gsm.sim.operator.numeric=50502
+    setprop ro.com.google.clientidbase.am android-optus-au-revc
+    setprop ro.com.google.clientidbase.ms android-optus-au-revc
+
+on property:gsm.sim.operator.numeric=50590
+    setprop ro.com.google.clientidbase.am android-optus-au-revc
+    setprop ro.com.google.clientidbase.ms android-optus-au-revc
+
+on property:ro.vendor.ril.fih_mbn_copy_completed=1
+    write /data/vendor/radio/atl_complete 0
+    write /data/misc/fih_mcfg/rfs_complete 0
+    write /data/misc/fih_mcfg/atl_log.txt ""
+
+on property:ro.vendor.ril.fih_mcfg_lock=1
+    write /data/misc/fih_mcfg/fih_mcfg.lock ""
+
+service e2p-sh /vendor/bin/init.sensor.e2pwrite.sh
+    class late_start
+    user system
+    group system
+    oneshot
+
+service led-init /vendor/bin/sh /vendor/bin/init.aura.led_init.sh
+    class main
+    user root
+    oneshot
+
+service wireless-init /system/vendor/bin/wireless_init -i
+    class main
+    user system
+    group system
+    oneshot
